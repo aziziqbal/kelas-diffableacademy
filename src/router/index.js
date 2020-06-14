@@ -32,10 +32,16 @@ const router = new Router({
         },
         {
           path: 'profile',
-          name: 'Contact',
-          component: () => import('@/views/contact-us/Index.vue'),
+          name: 'Profile',
+          component: () => import('@/views/Profile.vue'),
           meta: { src: require('@/assets/contact.jpg') },
         },
+        // {
+        //   path: 'profile',
+        //   name: 'Contact',
+        //   component: () => import('@/views/contact-us/Index.vue'),
+        //   meta: { src: require('@/assets/contact.jpg') },
+        // },
         {
           path: 'pro',
           name: 'Pro',

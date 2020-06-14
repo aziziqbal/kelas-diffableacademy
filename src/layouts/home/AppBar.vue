@@ -10,23 +10,15 @@
         Close
       </v-btn>
     </v-snackbar>
-    <v-app-bar
-      id="home-app-bar"
-      app
-      color="white"
-      elevation="1"
-      height="80"
-    >
+    <v-app-bar id="home-app-bar" app color="white" elevation="1" height="80">
       <base-img
         :src="require('@/assets/logo_da.png')"
-        class="mr-3 hidden-xs-only"
+        class="mr-3"
         contain
-        max-width="150"
+        max-width="120"
         width="100%"
       />
       <v-spacer />
-        <!-- <v-date-picker v-model="picker"></v-date-picker> -->
-
       <div>
         <v-tabs
           class="hidden-sm-and-down"
@@ -48,17 +40,8 @@
             class="font-weight-bold"
             min-width="96"
             text>
-            About
-          </v-tab> -->
-          <v-tab 
-            to="/about"
-            :ripple="false"
-            active-class="text--primary"
-            class="font-weight-bold"
-            min-width="96"
-            text>
             Kelas Yang Diikuti
-          </v-tab>
+          </v-tab> -->
           <v-tab 
             to="/profile"
             :ripple="false"
@@ -88,16 +71,46 @@
           </v-tab>
         </v-tabs>
       </div>
-
       <v-app-bar-nav-icon
         class="hidden-md-and-up"
         @click="drawer = !drawer"
       />
     </v-app-bar>
-    <home-drawer
+    <v-navigation-drawer
+      bottom
+      color="transparent"
+      fixed
       v-model="drawer"
-      :items="items"
-    />
+      height="auto"
+      overlay-color="secondary"
+      overlay-opacity=".8"
+      temporary
+      v-bind="$attrs"
+      v-on="$listeners"
+    >
+      <v-list color="white" shaped>
+        <v-list-item to="/" color="primary">
+          <v-list-item-content>
+            <v-list-item-title v-text="'Beranda'" />
+          </v-list-item-content>
+        </v-list-item>
+        <v-list-item to="/profile" color="primary">
+          <v-list-item-content>
+            <v-list-item-title v-text="'Profile'" />
+          </v-list-item-content>
+        </v-list-item>
+        <v-list-item @click="login()" color="primary">
+          <v-list-item-content>
+            <v-list-item-title v-text="'Login'" />
+          </v-list-item-content>
+        </v-list-item>
+        <v-list-item @click="daftar()" color="primary">
+          <v-list-item-content>
+            <v-list-item-title v-text="'Daftar'" />
+          </v-list-item-content>
+        </v-list-item>
+      </v-list>
+    </v-navigation-drawer>
     <v-dialog v-model="dialog" persistent max-width="600px">
       <v-card>
         <v-card-title>
@@ -133,7 +146,7 @@
           <v-container>
             <v-row no-gutters>
               <v-col cols="12" style="margin-bottom:10px;">
-                <v-text-field v-model="auth.nama" label="Nama*" required hint="nama lengkap akan digunakan untuk sertifikat kelulusan"
+                <v-text-field v-model="auth.full_name" label="Nama*" required hint="nama lengkap akan digunakan untuk sertifikat kelulusan"
                   persistent-hint></v-text-field>
               </v-col>
               <v-col cols="12">
@@ -144,14 +157,14 @@
                 <v-text-field v-model="auth.password" label="Password*" type="password" required></v-text-field>
               </v-col>
               <v-col cols="12">
-                <v-text-field v-model="auth.alamat" label="Alamat Lengkap"></v-text-field>
+                <v-text-field v-model="auth.location" label="Alamat Lengkap"></v-text-field>
               </v-col>
               <v-col cols="12">
-                <v-text-field v-model="auth.no_hp" label="Nomer Hp"></v-text-field>
+                <v-text-field v-model="auth.phone" label="Nomer Hp"></v-text-field>
               </v-col>
               <v-row style="padding-top:0px;">
                 <v-col class="d-flex" cols="6" sm="6" style="padding-top:0px;">
-                  <v-text-field v-model="auth.sekolah" label="Sekolah" required hint="tuliskan lulus jika sudah tidak bersekolah"
+                  <v-text-field v-model="auth.school" label="Sekolah" required hint="tuliskan lulus jika sudah tidak bersekolah"
                   persistent-hint></v-text-field>
                 </v-col>
                 <v-col class="d-flex" cols="6" sm="6" style="padding-top:0px;">
@@ -182,18 +195,18 @@
               <v-row>
                 <v-col class="d-flex" cols="6" sm="6">
                   <v-select
-                    item-text="jenis_disabilitas"
+                    item-text="type_of_disability"
                     item-value="id"
-                    v-model="auth.jenis_disabilitas"
+                    v-model="auth.type_of_disability"
                     :items="jenis_disabilitas"
                     label="Jenis Disabilitas"
                   ></v-select>
                 </v-col>
                 <v-col class="d-flex" cols="6" sm="6">
                   <v-select
-                    item-text="jenis_kelamin"
+                    item-text="gender"
                     item-value="id"
-                    v-model="auth.jenis_kelamin"
+                    v-model="auth.gender"
                     :items="jenis_kelamin"
                     label="Jenis Kelamin"
                   ></v-select>
@@ -218,10 +231,6 @@ import axios from 'axios'
   export default {
     name: 'HomeAppBar',
 
-    components: {
-      HomeDrawer: () => import('./Drawer'),
-    },
-
     data: () => ({
       status: '',
       color: '',
@@ -230,7 +239,7 @@ import axios from 'axios'
       menu: false,
       modal: false,
       menu2: false,
-      host: 'http://api.diffableacademy.com/index.php',
+      host: 'https://api.diffableacademy.com/index.php',
       fromDateMenu: false,
       fromDateVal: null,
       minDate: "2020-07-04",
@@ -253,23 +262,23 @@ import axios from 'axios'
       dialog2: false,
       drawer: null,
       items: [
-        'Home',
-        'About',
-        'Contact',
-        'Pro',
+        'Beranda',
+        'Profile',
+        'Masuk',
+        'Daftar',
       ],
       jenis_kelamin: {},
       jenis_disabilitas: {},
       auth: {
         email: '',
         password: '',
-        nama: '',
-        tanggal_lahir: '',
-        no_hp: '',
-        alamat: '',
-        sekolah: '',
-        jenis_disabilitas: '',
-        jenis_kelamin: ''
+        full_name: '',
+        date_of_birth: '',
+        phone: '',
+        location: '',
+        school: '',
+        type_of_disability: '',
+        gender: ''
       }
     }),
     computed: {
@@ -278,21 +287,23 @@ import axios from 'axios'
       }
     },
     mounted() {
+      // console.log('asdas')
       this.getJenisKelamin()
       this.getJenisDisabilitas()
     },
     methods: {
       getJenisKelamin() {
-        axios.get(this.host + '/auth/jenis_kelamin').then(res => {
+        axios.get(this.host + '/auth/gender').then(res => {
           this.jenis_kelamin = res.data
-          console.log(res)
+          console.log(this.jenis_kelamin)
         }).catch ((err) => {
           console.log(err);
         })
       },
       getJenisDisabilitas() {
-        axios.get(this.host + '/auth/jenis_disabilitas').then(res => {
+        axios.get(this.host + '/auth/type_of_disability').then(res => {
           this.jenis_disabilitas = res.data
+          console.log(this.jenis_disabilitas)
         }).catch ((err) => {
           console.log(err);
         })
@@ -304,33 +315,29 @@ import axios from 'axios'
         this.dialog2 = true
       },
       save() {
-        const qs = require('querystring')
-        this.auth.tanggal_lahir = this.date
-        console.log(JSON.stringify(this.auth))
+        this.auth.date_of_birth = this.date
         let rawData = {
           email: this.auth.email,
           password: this.auth.password,
-          nama: this.auth.nama,
-          tanggal_lahir: this.auth.tanggal_lahir,
-          no_hp: this.auth.no_hp,
-          alamat: this.auth.alamat,
-          sekolah: this.auth.sekolah,
-          jenis_disabilitas: this.auth.jenis_disabilitas,
-          jenis_kelamin: this.auth.jenis_kelamin
+          full_name: this.auth.full_name,
+          date_of_birth: this.auth.date_of_birth,
+          phone: this.auth.phone,
+          location: this.auth.location,
+          school: this.auth.school,
+          type_of_disability: this.auth.type_of_disability,
+          gender: this.auth.gender
         }
         axios({
           method: 'post',
           url: this.host + '/auth/register',
-          // responseType: 'json',
           data: this.auth,
-          // data: qs.stringify(this.auth)
           config: { headers: { 'Content-Type': 'multipart/form-data' }}
         })
         .then(response => {
-          console.log(response)
           this.status = 'Data berhasil tersimpan'
           this.color = 'success'
           this.snackbar = true
+          this.dialog2 = false
         })
         .catch(error => {
           this.status = 'Error' + error
