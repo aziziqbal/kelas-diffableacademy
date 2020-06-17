@@ -24,7 +24,7 @@
           class="hidden-sm-and-down"
           optional
         >
-          <v-tab 
+          <v-tab
             to="/"
             :ripple="false"
             active-class="text--primary"
@@ -33,16 +33,16 @@
             text>
             Belajar
           </v-tab>
-          <!-- <v-tab 
-            to="/about"
+          <v-tab
+            to="/"
             :ripple="false"
             active-class="text--primary"
             class="font-weight-bold"
             min-width="96"
             text>
-            Kelas Yang Diikuti
-          </v-tab> -->
-          <v-tab 
+            Kelas yang dipelajari
+          </v-tab>
+          <v-tab
             to="/profile"
             :ripple="false"
             active-class="text--primary"
@@ -51,7 +51,8 @@
             text>
             Profile
           </v-tab>
-          <v-tab 
+          <v-tab
+            v-show="ceklogin"
             @click="login()"
             :ripple="false"
             active-class="text--primary"
@@ -60,7 +61,8 @@
             text>
             Masuk
           </v-tab>
-          <v-tab 
+          <v-tab
+            v-show="ceklogin"
             @click="daftar()"
             :ripple="false"
             active-class="text--primary"
@@ -118,14 +120,15 @@
         </v-card-title>
         <v-card-text>
           <v-container>
+            {{ statusUser }}
             <v-row>
               <v-col cols="12">
-                <v-text-field label="Email*" hint="email yang telah didaftarkan"
+                <v-text-field v-model="dataLogin.email" label="Email*" hint="email yang telah didaftarkan"
                   persistent-hint
                   required></v-text-field>
               </v-col>
               <v-col cols="12">
-                <v-text-field label="Password*" type="password" required></v-text-field>
+                <v-text-field v-model="dataLogin.password" label="Password*" type="password" required></v-text-field>
               </v-col>
             </v-row>
           </v-container>
@@ -133,7 +136,7 @@
         <v-card-actions>
           <v-spacer></v-spacer>
           <v-btn color="blue darken-1" text @click="dialog = false">Tutup</v-btn>
-          <v-btn color="blue darken-1" text @click="dialog = false">Masuk</v-btn>
+          <v-btn color="blue darken-1" text @click="masuk()">Masuk</v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>
@@ -150,7 +153,7 @@
                   persistent-hint></v-text-field>
               </v-col>
               <v-col cols="12">
-                <v-text-field v-model="auth.email" label="Email*" 
+                <v-text-field v-model="auth.email" label="Email*"
                   required></v-text-field>
               </v-col>
               <v-col cols="12">
@@ -227,11 +230,14 @@
 
 <script>
 import axios from 'axios'
+import { mapState, mapGetters } from 'vuex'
 
   export default {
     name: 'HomeAppBar',
 
     data: () => ({
+      ceklogin: true,
+      dataUser: {},
       status: '',
       color: '',
       snackbar: false,
@@ -279,19 +285,37 @@ import axios from 'axios'
         school: '',
         type_of_disability: '',
         gender: ''
-      }
+      },
+      dataLogin: {
+        email: '',
+        password: ''
+      },
+      dataLogin2: {}
     }),
+    // computed: mapState([
+    //   'user'
+    // ]),
     computed: {
+      ...mapState(['user', 'statusUser']),
       fromDateDisp() {
         return this.fromDateVal;
       }
     },
     mounted() {
-      // console.log('asdas')
+      this.getUser()
       this.getJenisKelamin()
       this.getJenisDisabilitas()
     },
     methods: {
+      getUser() {
+        this.dataLogin2 = JSON.parse(localStorage.getItem('dataUserLocal'));
+        console.log(this.dataLogin2.status)
+        if (this.dataLogin2.status === true) {
+          this.ceklogin = false
+        } else {
+          this.ceklogin = true
+        }
+      },
       getJenisKelamin() {
         axios.get(this.host + '/auth/gender').then(res => {
           this.jenis_kelamin = res.data
@@ -338,6 +362,29 @@ import axios from 'axios'
           this.color = 'success'
           this.snackbar = true
           this.dialog2 = false
+        })
+        .catch(error => {
+          this.status = 'Error' + error
+          this.color = 'error'
+          this.snackbar = true
+        })
+
+      },
+      masuk() {
+        axios({
+          method: 'post',
+          url: this.host + '/auth/login',
+          data: this.dataLogin,
+          config: { headers: { 'Content-Type': 'multipart/form-data' }}
+        })
+        .then(response => {
+          this.dataUser = response.data
+          this.$store.dispatch('createEvent', this.dataUser)
+          localStorage.setItem('dataUserLocal',  JSON.stringify(this.dataUser))
+          this.status = 'Selamat datang '
+          this.color = 'success'
+          this.snackbar = true
+          // this.dialog2 = false
         })
         .catch(error => {
           this.status = 'Error' + error
